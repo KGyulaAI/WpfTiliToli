@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfTiliToli"
         mc:Ignorable="d"
-        Title="TiliToli" Height="450" Width="450">
-    <Grid>
+        Title="TiliToli" MinHeight="450" MinWidth="450" Height="450" Width="450">
+    <Grid Background="Aquamarine">
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
@@ -15,25 +15,15 @@
             <RowDefinition Height="1*"/>
             <RowDefinition Height="0.2*"/>
         </Grid.RowDefinitions>
-        <Button x:Name="btnUjJatek" Content="Új játék" Grid.Column="0" Grid.Row="0" Width="100px" Click="btnUjJatek_Click"/>
-        <Grid x:Name="gridMezo" Grid.Column="0" Grid.Row="1" ShowGridLines="True">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <!-- Add puzzle pieces here -->
-        </Grid>
+        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button x:Name="btnUjJatek" Margin="10px" Content="Új játék" Width="100px" Click="btnUjJatek_Click"/>
+            <TextBlock Text="Pálya mérete:" VerticalAlignment="Center" FontSize="20"/>
+            <TextBox x:Name="txtPalyaMeret" Margin="10px" Width="100px" VerticalAlignment="Center" FontSize="20px"/>
+        </StackPanel>
+        <Grid x:Name="gridMezo" Grid.Column="0" Grid.Row="1"/>
         <StackPanel Grid.Column="0" Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Label Content="Lépések száma:"/>
-            <Label x:Name="lblLepesekSzama" Content="0"/>
+            <Label Content="Lépések száma:" FontSize="20"/>
+            <Label x:Name="lblLepesekSzama" Content="0" FontSize="20"/>
         </StackPanel>
     </Grid>
 </Window>

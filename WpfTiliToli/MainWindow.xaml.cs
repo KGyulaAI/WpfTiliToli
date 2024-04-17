@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics.Eventing.Reader;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -16,144 +17,140 @@ namespace WpfTiliToli
     /// </summary>
     public partial class MainWindow : Window
     {
-        private int palyaMeret = 3;
-        private int[,] palya;
-        private Button[,] gombok;
-        private int lepesekSzama = 0;
+        private int palyaMeret;
+        private int mezokSzama;
+        private int lepesekSzama = 1;
+        private Button[,] palya;
         public MainWindow()
         {
             InitializeComponent();
-            palya = new int[palyaMeret, palyaMeret];
-            gombok = new Button[palyaMeret, palyaMeret];
+            txtPalyaMeret.Text = "3";
+            palyaMeret = Convert.ToInt32(txtPalyaMeret.Text);
+            mezokSzama = palyaMeret * palyaMeret;
+            PalyaGeneralas(palyaMeret);
+        }
+        private void PalyaGeneralas(int palyaMeret)
+        {
+            Button mezo;
+            palya = new Button[palyaMeret, palyaMeret];
+            int randomContent;
+            List<int> mezoContents = new List<int>();
+            for (int content = 1; content <= mezokSzama - 1; content++)
+            {
+                mezoContents.Add(content);
+            }
+
+            gridMezo.Children.Clear();
             gridMezo.RowDefinitions.Clear();
             gridMezo.ColumnDefinitions.Clear();
-            for (int i = 0; i < palyaMeret; i++)
+
+            for (int sor = 0; sor < palyaMeret; sor++)
             {
                 gridMezo.RowDefinitions.Add(new RowDefinition());
                 gridMezo.ColumnDefinitions.Add(new ColumnDefinition());
-            }
-            for (int sor = 0; sor < palyaMeret; sor++)
-            {
                 for (int oszlop = 0; oszlop < palyaMeret; oszlop++)
                 {
-                    palya[sor, oszlop] = sor * palyaMeret + oszlop + 1;
-                }
-            }
-            palya[palyaMeret - 1, palyaMeret - 1] = 0;
-
-            for (int sor = 0; sor < palyaMeret; sor++)
-            {
-                for (int oszlop = 0; oszlop < palyaMeret; oszlop++)
-                {
-                    gombok[sor, oszlop] = new Button();
-                    gombok[sor, oszlop].Content = palya[sor, oszlop].ToString();
-                    gombok[sor, oszlop].FontSize = 24;
-                    gombok[sor, oszlop].HorizontalAlignment = HorizontalAlignment.Stretch;
-                    gombok[sor, oszlop].VerticalAlignment = VerticalAlignment.Stretch;
-                    gombok[sor, oszlop].Margin = new Thickness(1);
-                    gombok[sor, oszlop].Click += Button_Click;
-                    Grid.SetRow(gombok[sor, oszlop], sor);
-                    Grid.SetColumn(gombok[sor, oszlop], oszlop);
-                    gridMezo.Children.Add(gombok[sor, oszlop]);
-                }
-            }
-            GombokKeverese();
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            Button clickedButton = (Button)sender;
-            int clickedRow = Grid.GetRow(clickedButton);
-            int clickedCol = Grid.GetColumn(clickedButton);
-
-            int emptyRow = -1;
-            int emptyCol = -1;
-            for (int i = 0; i < palyaMeret; i++)
-            {
-                for (int j = 0; j < palyaMeret; j++)
-                {
-                    if (palya[i, j] == 0)
+                    mezo = new Button();
+                    mezo.FontSize = 50;
+                    if (mezoContents.Count != 0)
                     {
-                        emptyRow = i;
-                        emptyCol = j;
-                        break;
+                        randomContent = new Random().Next(mezoContents.Count);
+                        mezo.Content = mezoContents[randomContent];
+                        mezoContents.RemoveAt(randomContent);
                     }
-                }
-            }
-
-            if (Math.Abs(clickedRow - emptyRow) <= 1 && Math.Abs(clickedCol - emptyCol) <= 1)
-            {
-                int temp = palya[clickedRow, clickedCol];
-                palya[clickedRow, clickedCol] = palya[emptyRow, emptyCol];
-                palya[emptyRow, emptyCol] = temp;
-
-                gombok[clickedRow, clickedCol].Content = palya[clickedRow, clickedCol].ToString();
-                gombok[emptyRow, emptyCol].Content = palya[emptyRow, emptyCol].ToString();
-
-                lepesekSzama++;
-                lblLepesekSzama.Content = lepesekSzama;
-
-                if (MegoldottE())
-                {
-                    MessageBox.Show("Nyertél!");
+                    else
+                    {
+                        mezo.Content = mezokSzama;
+                    }
+                    Grid.SetRow(mezo, sor);
+                    Grid.SetColumn(mezo, oszlop);
+                    if (sor == palyaMeret - 1 && oszlop == palyaMeret - 1)
+                    {
+                        mezo.Visibility = Visibility.Hidden;
+                    }
+                    else
+                    {
+                        mezo.Click += Mezo_Click;
+                    }
+                    gridMezo.Children.Add(mezo);
+                    palya[sor, oszlop] = mezo;
                 }
             }
         }
-
-        private bool MegoldottE()
+        private void Mezo_Click(object sender, RoutedEventArgs e)
         {
-            for (int sor = 0; sor < palyaMeret; sor++)
+            //2 mező cseréje kattintásra
+            Button kattintottMezo = (Button)sender;
+            int kattintottMezoSora = Grid.GetRow(kattintottMezo);
+            int kattintottMezoOszlopa = Grid.GetColumn(kattintottMezo);
+            if (kattintottMezoSora > 0 && (int)palya[kattintottMezoSora - 1, kattintottMezoOszlopa].Content == mezokSzama)
             {
-                for (int oszlop = 0; oszlop < palyaMeret; oszlop++)
+                MezoCsere(kattintottMezo, palya[kattintottMezoSora - 1, kattintottMezoOszlopa]);
+            }
+            else if (kattintottMezoSora < palyaMeret - 1 && (int)palya[kattintottMezoSora + 1, kattintottMezoOszlopa].Content == mezokSzama)
+            {
+                MezoCsere(kattintottMezo, palya[kattintottMezoSora + 1, kattintottMezoOszlopa]);
+            }
+            else if (kattintottMezoOszlopa > 0 && (int)palya[kattintottMezoSora, kattintottMezoOszlopa - 1].Content == mezokSzama)
+            {
+                MezoCsere(kattintottMezo, palya[kattintottMezoSora, kattintottMezoOszlopa - 1]);
+            }
+            else if (kattintottMezoOszlopa < palyaMeret - 1 && (int)palya[kattintottMezoSora, kattintottMezoOszlopa + 1].Content == mezokSzama)
+            {
+                MezoCsere(kattintottMezo, palya[kattintottMezoSora, kattintottMezoOszlopa + 1]);
+            }
+
+            //Nyerés ellenőrzése
+            if (HelyesE())
+            {
+                MessageBox.Show($"Nyertél! {lepesekSzama - 1} lépéssel oldottad meg.", "Hurrá", MessageBoxButton.OK, MessageBoxImage.Information);
+                UjJatek();
+            }
+        }
+        private bool HelyesE()
+        {
+            int mezoSzam = 1;
+            foreach (var mezo in palya)
+            {
+                if (Convert.ToInt32(mezo.Content) != mezoSzam)
                 {
-                    if (palya[sor, oszlop] != sor * palyaMeret + oszlop + 1)
-                    {
-                        return false;
-                    }
+                    return false;
                 }
+                mezoSzam++;
             }
             return true;
         }
-
-        private void GombokKeverese()
+        private void MezoCsere(Button jelenlegiGomb, Button uresGomb)
         {
+            int jelenlegiGombSora = Grid.GetRow(jelenlegiGomb);
+            int jelenlegiGombOszlopa = Grid.GetColumn(jelenlegiGomb);
+            int uresGombSora = Grid.GetRow(uresGomb);
+            int uresGombOszlopa = Grid.GetColumn(uresGomb);
 
-            List<Button> gombLista = new List<Button>();
-            for (int i = 0; i < palyaMeret; i++)
-            {
-                for (int j = 0; j < palyaMeret; j++)
-                {
-                    gombLista.Add(gombok[i, j]);
-                }
-            }
+            gridMezo.Children.Remove(jelenlegiGomb);
+            gridMezo.Children.Remove(uresGomb);
+            Grid.SetRow(jelenlegiGomb, uresGombSora);
+            Grid.SetColumn(jelenlegiGomb, uresGombOszlopa);
+            Grid.SetRow(uresGomb, jelenlegiGombSora);
+            Grid.SetColumn(uresGomb, jelenlegiGombOszlopa);
+            palya[jelenlegiGombSora, jelenlegiGombOszlopa] = uresGomb;
+            palya[uresGombSora, uresGombOszlopa] = jelenlegiGomb;
+            gridMezo.Children.Add(jelenlegiGomb);
+            gridMezo.Children.Add(uresGomb);
 
-            Random random = new Random();
-            int gombokSzama = gombLista.Count;
-            while (gombokSzama > 1)
-            {
-                gombokSzama--;
-                int k = random.Next(gombokSzama + 1);
-                Button value = gombLista[k];
-                gombLista[k] = gombLista[gombokSzama];
-                gombLista[gombokSzama] = value;
-            }
-
-            int index = 0;
-            for (int i = 0; i < palyaMeret; i++)
-            {
-                for (int j = 0; j < palyaMeret; j++)
-                {
-                    Grid.SetRow(gombLista[index], i);
-                    Grid.SetColumn(gombLista[index], j);
-                    index++;
-                }
-            }
+            lblLepesekSzama.Content = lepesekSzama++;
         }
-
         private void btnUjJatek_Click(object sender, RoutedEventArgs e)
         {
-            GombokKeverese();
-            lblLepesekSzama.Content = 0;
+            UjJatek();
+        }
+        private void UjJatek()
+        {
+            palyaMeret = Convert.ToInt32(txtPalyaMeret.Text);
+            mezokSzama = palyaMeret * palyaMeret;
+            lepesekSzama = 0;
+            lblLepesekSzama.Content = lepesekSzama++;
+            PalyaGeneralas(palyaMeret);
         }
     }
 }
